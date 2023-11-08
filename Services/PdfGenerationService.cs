@@ -4,7 +4,6 @@ using Syncfusion.Drawing;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Barcode;
 using Syncfusion.Pdf.Graphics;
-using System.Text;
 using Models;
 
 namespace Services
@@ -23,9 +22,10 @@ namespace Services
         {
             // Initialize PDF document
             using PdfDocument document = new PdfDocument();
-            //string backgroundImagePath = _configuration["BackgroundImagePath"];
             PdfFont regularFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
             PdfFont boldFont = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Bold);
+
+            backgroundImagePath ??= _configuration["BackgroundImagePath"];
 
             for (int i = 0; i < 5; i++)
             {
@@ -36,20 +36,41 @@ namespace Services
                 DrawBackgroundImage(page, backgroundImagePath, ticketOrigin, scaleFactor);
                 DrawTextContent(page.Graphics, ticketOrigin, scaleFactor, regularFont, boldFont, ticketDetails);
                 DrawBarcode(page, ticketOrigin, scaleFactor, ticketDetails);
+
+                foreach (var element in ticketDetails.Elements)
+                {
+                    page.Graphics.DrawString(
+                        element.Content,
+                        regularFont,
+                    PdfBrushes.Black,
+                    new PointF(ticketOrigin.X + element.Position.X * scaleFactor, ticketOrigin.Y + element.Position.Y * scaleFactor)
+                    );
+                }
+
             }
             // Save and close the document
             try
             {
-                using FileStream stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using FileStream stream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);
                 document.Save(stream);
+            }
+            catch (IOException ioEx)
+            {
+                _logger.LogError($"IO Exception in PDF Ticket creation: {ioEx.Message}");
+                throw; // Consider retry logic or alternative response
+            }
+            catch (UnauthorizedAccessException uaEx)
+            {
+                _logger.LogError($"Access Exception in PDF Ticket creation: {uaEx.Message}");
+                throw; // Access issue - might not want to retry
             }
             catch (Exception ex)
             {
-                _logger.LogError("PDF Ticket creation failed: " + ex.Message);
-                throw;
+                _logger.LogError($"PDF Ticket creation failed: {ex.Message}");
+                throw; // General exception - unexpected
             }
 
-            _logger.LogInformation("PDF Ticket Creation succeeded and saved to " + outputPath);
+            _logger.LogInformation($"PDF Ticket Creation succeeded and saved to {outputPath}");
         }
 
         private void DrawBackgroundImage(PdfPage page, string backgroundImagePath, PointF origin, float scale)
@@ -110,22 +131,44 @@ namespace Services
 
         private void DrawBarcode(PdfPage page, PointF origin, float scale, TicketRequest ticketDetails)
         {
-            PdfCode39Barcode barcode = new PdfCode39Barcode
+            if (ticketDetails.UseQRCode)
             {
-                Text = ticketDetails.BookingNumber,
-                Size = new SizeF(300 * scale, 100 * scale)
-            };
+                // Draw QR code
+                PdfQRBarcode qrCode = new PdfQRBarcode();
+                qrCode.Text = ticketDetails.BarcodeContent;
+                qrCode.Draw(page.Graphics, new PointF(
+                    ticketDetails.BarcodePosition.X * scale,
+                    ticketDetails.BarcodePosition.Y * scale
+                ));
 
-            PointF barcodePosition = new PointF(
-                origin.X + (1024 * scale) - (barcode.Size.Height * scale) - 80 * scale,
-                origin.Y + 330 * scale
-            );
+            }
+            else
+            {
+                // Draw barcode
+                PdfCode39Barcode barcode = new PdfCode39Barcode();
+                barcode.Text = ticketDetails.BarcodeContent;
+                barcode.Draw(page.Graphics, new PointF(
+                    ticketDetails.BarcodePosition.X * scale,
+                    ticketDetails.BarcodePosition.Y * scale
+                ));
 
-            page.Graphics.Save();
-            page.Graphics.TranslateTransform(barcodePosition.X, barcodePosition.Y);
-            page.Graphics.RotateTransform(-90);
-            barcode.Draw(page.Graphics, PointF.Empty);
-            page.Graphics.Restore();
+                //PdfCode39Barcode barcode = new PdfCode39Barcode
+                //{
+                //    Text = ticketDetails.BookingNumber,
+                //    Size = new SizeF(300 * scale, 100 * scale)
+                //};
+
+                //PointF barcodePosition = new PointF(
+                //    origin.X + (1024 * scale) - (barcode.Size.Height * scale) - 80 * scale,
+                //    origin.Y + 330 * scale
+                //);
+
+                //page.Graphics.Save();
+                //page.Graphics.TranslateTransform(barcodePosition.X, barcodePosition.Y);
+                //page.Graphics.RotateTransform(-90);
+                //barcode.Draw(page.Graphics, PointF.Empty);
+                //page.Graphics.Restore();
+            }
         }
     }
 }
