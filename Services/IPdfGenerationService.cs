@@ -5,5 +5,8 @@ namespace Services
     public interface IPdfGenerationService
     {
         Task CreatePdfAsync(string outputPath, TicketRequest ticketDetails, string backgroundImagePath);
+        Task<List<TicketRequest>> ReadJsonDataAsync();
+
+
     }
 }

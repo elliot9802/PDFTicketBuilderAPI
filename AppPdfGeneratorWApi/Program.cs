@@ -6,6 +6,7 @@ var syncfusionLicenseKey = builder.Configuration["SyncfusionLicenseKey"];
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicenseKey);
 
 // Add services to the container.
+builder.Services.AddHttpClient();
 builder.Services.AddLogging();
 builder.Services.AddControllers();
 builder.Services.AddTransient<IPdfGenerationService, PdfGenerationService>();

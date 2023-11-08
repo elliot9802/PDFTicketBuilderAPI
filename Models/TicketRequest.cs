@@ -1,19 +1,37 @@
-﻿using Syncfusion.Drawing;
+﻿using Newtonsoft.Json;
+using Syncfusion.Drawing;
 
 namespace Models
 {
     public class TicketRequest
     {
+        [JsonProperty("eMail")]
         public string Email { get; set; }
+
+        [JsonProperty("namn")]
         public string Name { get; set; }
+
+        [JsonProperty("webbkod")]
         public string WebBookingNumber { get; set; }
+
+        [JsonProperty("BokningsNr")]
         public string BookingNumber { get; set; }
+
+        [JsonProperty("Artikelnamn")]
         public string TicketType { get; set; }
+
+        [JsonProperty("Pris")]
         public decimal Price { get; set; }
+
         public DateTime PurchaseDate { get; set; }
+
+        [JsonProperty("serviceavgift1_kr")]
         public decimal ServiceFee { get; set; }
+
+        [JsonProperty("namn1")]
         public string EventName { get; set; }
         public string EventNameEnglish { get; set; }
+        [JsonProperty("datumStart")]
         public DateTime EventDate { get; set; }
 
         // New properties for customization options

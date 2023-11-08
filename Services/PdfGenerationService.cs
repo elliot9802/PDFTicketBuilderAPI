@@ -5,6 +5,7 @@ using Syncfusion.Pdf;
 using Syncfusion.Pdf.Barcode;
 using Syncfusion.Pdf.Graphics;
 using Models;
+using Newtonsoft.Json;
 
 namespace Services
 {
@@ -12,12 +13,58 @@ namespace Services
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<PdfGenerationService> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public PdfGenerationService(ILogger<PdfGenerationService> logger, IConfiguration configuration)
+        public PdfGenerationService(ILogger<PdfGenerationService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
+
+        public async Task<List<TicketRequest>> ReadJsonDataAsync()
+        {
+            try
+            {
+                HttpClient httpClient = _httpClientFactory.CreateClient();
+                string ticketDetailsUrl = _configuration["TicketJsonDetailsUrl"];
+
+                HttpResponseMessage response = await httpClient.GetAsync(ticketDetailsUrl);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Error fetching JSON data. Status code: {StatusCode}", response.StatusCode);
+                    return new List<TicketRequest>();
+                }
+
+                string ticketDetailsJson = await response.Content.ReadAsStringAsync();
+
+                // Deserialize the JSON array into a list of TicketRequest objects
+                List<TicketRequest> ticketRequests = JsonConvert.DeserializeObject<List<TicketRequest>>(ticketDetailsJson);
+
+                //// Log the deserialized list
+                //foreach (var ticketRequest in ticketRequests)
+                //{
+                //    _logger.LogInformation("Ticket Details: {@TicketRequest}", ticketRequest);
+                //}
+                return ticketRequests;
+            }
+            catch (JsonSerializationException jex)
+            {
+                _logger.LogError(jex, "An error occurred while deserializing the JSON data.");
+                throw;
+            }
+            catch (HttpRequestException hrex)
+            {
+                _logger.LogError(hrex, "An error occurred while sending the HTTP request.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred.");
+                throw;
+            }
+        }
+
         public async Task CreatePdfAsync(string outputPath, TicketRequest ticketDetails, string backgroundImagePath)
         {
             // Initialize PDF document
@@ -27,7 +74,7 @@ namespace Services
 
             backgroundImagePath ??= _configuration["BackgroundImagePath"];
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 5; i++) // Change to amount of tickets that should be created
             {
                 PdfPage page = document.Pages.Add();
                 float scaleFactor = Math.Min(page.GetClientSize().Width / 1024f, 1);

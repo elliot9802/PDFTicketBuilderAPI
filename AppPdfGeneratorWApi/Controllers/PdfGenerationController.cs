@@ -24,21 +24,26 @@ namespace AppPdfGeneratorWApi.Controllers
         {
             _pdfService = pdfService;
             _pdfUtility = pdfUtility;
-            _logger = logger;            _fileService = fileService;
+            _logger = logger;
+            _fileService = fileService;
 
         }
 
-        //[HttpGet(Name = "GetWeatherForecast")]
-        //public IEnumerable<WeatherForecast> Get()
-        //{
-        //    return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        //    {
-        //        Date = DateTime.Now.AddDays(index),
-        //        TemperatureC = Random.Shared.Next(-20, 55),
-        //        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        //    })
-        //    .ToArray();
-        //}
+        [HttpGet("read-json")]
+        public async Task<IActionResult> ReadJsonData()
+        {
+            try
+            {
+                var ticketRequests = await _pdfUtility.ReadJsonDataAsync();
+                return Ok(ticketRequests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading JSON data.");
+                return StatusCode(500, "An error occurred while reading JSON data.");
+            }
+        }
+
 
         [HttpPost("createPdf")]
         public async Task<IActionResult> CreatePdf([FromForm] TicketRequest ticketRequest, IFormFile bgFile)
