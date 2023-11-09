@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Models;
-
+using DbModels;
 namespace Services
 {
     public class PdfCreationService : IPdfCreationService
@@ -53,9 +53,9 @@ namespace Services
             }
         }
 
-        public async Task<byte[]> CreateAndSavePdfAsync(TicketRequest ticketDetails, string backgroundImagePath)
+        public async Task<byte[]> CreateAndSavePdfAsync(TicketsDataDbM ticketData, TicketHandling ticketDetails, string backgroundImagePath)
         {
-            return await ConvertToPdfBytesAsync(outputPath => _pdfUtility.CreatePdfAsync(outputPath, ticketDetails, backgroundImagePath));
+            return await ConvertToPdfBytesAsync(outputPath => _pdfUtility.CreatePdfAsync(outputPath, ticketData, ticketDetails, backgroundImagePath));
         }
     }
 }

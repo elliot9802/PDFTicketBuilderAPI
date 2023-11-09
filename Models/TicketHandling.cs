@@ -3,36 +3,12 @@ using Syncfusion.Drawing;
 
 namespace Models
 {
-    public class TicketRequest
+    public class TicketHandling
     {
-        [JsonProperty("eMail")]
-        public string Email { get; set; }
-
-        [JsonProperty("namn")]
-        public string Name { get; set; }
-
-        [JsonProperty("webbkod")]
-        public string WebBookingNumber { get; set; }
-
-        [JsonProperty("BokningsNr")]
-        public string BookingNumber { get; set; }
-
-        [JsonProperty("Artikelnamn")]
-        public string TicketType { get; set; }
-
-        [JsonProperty("Pris")]
-        public decimal Price { get; set; }
-
-        public DateTime PurchaseDate { get; set; }
-
-        [JsonProperty("serviceavgift1_kr")]
-        public decimal ServiceFee { get; set; }
-
-        [JsonProperty("namn1")]
-        public string EventName { get; set; }
-        public string EventNameEnglish { get; set; }
-        [JsonProperty("datumStart")]
-        public DateTime EventDate { get; set; }
+        //#region oklart
+        //public string? TicketType { get; set; }
+        //public DateTime? PurchaseDate { get; set; }
+        //#endregion
 
         // New properties for customization options
         public bool IncludeEmail { get; set; }
@@ -51,10 +27,11 @@ namespace Models
         public PointF NamePosition { get; set; }
         public PointF WebBookingNumberPosition { get; set; }
 
-        public List<PdfElement> Elements { get; set; }
+        public List<PdfElement>? Elements { get; set; }
 
-        public string BarcodeContent { get; set; }
+        public string? BarcodeContent { get; set; }
         public PointF BarcodePosition { get; set; }
+
         // Property to choose between QR code and Barcode
         public bool UseQRCode { get; set; }
     }

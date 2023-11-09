@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using DbModels;
 using Services;
 
 namespace AppPdfGeneratorWApi.Controllers
@@ -15,10 +16,6 @@ namespace AppPdfGeneratorWApi.Controllers
         private readonly IFileService _fileService;
         private readonly IPdfCreationService _pdfService;
         private readonly IPdfGenerationService _pdfUtility;
-        //    private static readonly string[] Summaries = new[]
-        //    {
-        //    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        //};
 
         public PdfGenerationController(IPdfCreationService pdfService, IPdfGenerationService pdfUtility, IFileService fileService, ILogger<PdfGenerationController> logger)
         {
@@ -46,7 +43,7 @@ namespace AppPdfGeneratorWApi.Controllers
 
 
         [HttpPost("createPdf")]
-        public async Task<IActionResult> CreatePdf([FromForm] TicketRequest ticketRequest, IFormFile bgFile)
+        public async Task<IActionResult> CreatePdf([FromForm] TicketsDataDbM ticketData, TicketHandling ticketRequest, IFormFile bgFile)
         {
             try
             {
@@ -56,11 +53,11 @@ namespace AppPdfGeneratorWApi.Controllers
                     return BadRequest("Please provide a background image file.");
                 }
 
-                //if (Path.GetExtension(bgFile.FileName).ToLower() != ".jpg" || ".png")
-                //{
-                //    _logger.LogWarning($"Uploaded file '{bgFile.FileName}' is not an jpg or png file.");
-                //    return BadRequest("Please provide a valid jpg or png file.");
-                //}
+                if (Path.GetExtension(bgFile.FileName).ToLower() != ".jpg" || Path.GetExtension(bgFile.FileName).ToLower() != ".png")
+                {
+                    _logger.LogWarning($"Uploaded file '{bgFile.FileName}' is not an jpg or png file.");
+                    return BadRequest("Please provide a valid jpg or png file.");
+                }
 
                 var tempBgFilePath = Path.GetTempFileName();
                 using (var stream = new FileStream(tempBgFilePath, FileMode.Create))
@@ -70,7 +67,7 @@ namespace AppPdfGeneratorWApi.Controllers
 
                 // Generate the PDF with the ticket details and the background image.
                 string outputPath = _pdfService.GetTemporaryPdfFilePath();
-                await _pdfUtility.CreatePdfAsync(outputPath, ticketRequest, tempBgFilePath);
+                await _pdfUtility.CreatePdfAsync(outputPath, ticketData, ticketRequest, tempBgFilePath);
 
                 // Read the generated PDF into a byte array.
                 //byte[] pdfBytes = await _pdfService.CreateAndSavePdfAsync(ticketRequest);

@@ -5,7 +5,10 @@ using Syncfusion.Pdf;
 using Syncfusion.Pdf.Barcode;
 using Syncfusion.Pdf.Graphics;
 using Models;
+using DbModels;
 using Newtonsoft.Json;
+using DbContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services
 {
@@ -13,40 +16,47 @@ namespace Services
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<PdfGenerationService> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public PdfGenerationService(ILogger<PdfGenerationService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        private string? _dblogin;
+        public PdfGenerationService(ILogger<PdfGenerationService> logger, IConfiguration configuration)
         {
             _configuration = configuration;
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _dblogin = _configuration["DbLogins"];
         }
 
-        public async Task<List<TicketRequest>> ReadJsonDataAsync()
+        public async Task<List<TicketsDataDbM>> ReadJsonDataAsync()
         {
             try
             {
-                HttpClient httpClient = _httpClientFactory.CreateClient();
-                string ticketDetailsUrl = _configuration["TicketJsonDetailsUrl"];
 
-                HttpResponseMessage response = await httpClient.GetAsync(ticketDetailsUrl);
-                if (!response.IsSuccessStatusCode)
+                using (var db = csMainDbContext.DbContext(_dblogin))
                 {
-                    _logger.LogError("Error fetching JSON data. Status code: {StatusCode}", response.StatusCode);
-                    return new List<TicketRequest>();
+
+                    var ticket = db.TicketRequest.ToListAsync();
+
+                    return await ticket;
                 }
+                ////HttpClient httpClient = _httpClientFactory.CreateClient();
+                //string ticketDetailsUrl = _configuration["TicketJsonDetailsUrl"];
 
-                string ticketDetailsJson = await response.Content.ReadAsStringAsync();
-
-                // Deserialize the JSON array into a list of TicketRequest objects
-                List<TicketRequest> ticketRequests = JsonConvert.DeserializeObject<List<TicketRequest>>(ticketDetailsJson);
-
-                //// Log the deserialized list
-                //foreach (var ticketRequest in ticketRequests)
+                //HttpResponseMessage response = await httpClient.GetAsync(ticketDetailsUrl);
+                //if (!response.IsSuccessStatusCode)
                 //{
-                //    _logger.LogInformation("Ticket Details: {@TicketRequest}", ticketRequest);
+                //    _logger.LogError("Error fetching JSON data. Status code: {StatusCode}", response.StatusCode);
+                //    return new List<TicketHandling>();
                 //}
-                return ticketRequests;
+
+                //string ticketDetailsJson = await response.Content.ReadAsStringAsync();
+
+                //// Deserialize the JSON array into a list of TicketHandling objects
+                //List<TicketHandling> ticketRequests = JsonConvert.DeserializeObject<List<TicketHandling>>(ticketDetailsJson);
+
+                ////// Log the deserialized list
+                ////foreach (var ticketRequest in ticketRequests)
+                ////{
+                ////    _logger.LogInformation("Ticket Details: {@TicketHandling}", ticketRequest);
+                ////}
+                //return ticketRequests;
             }
             catch (JsonSerializationException jex)
             {
@@ -65,7 +75,7 @@ namespace Services
             }
         }
 
-        public async Task CreatePdfAsync(string outputPath, TicketRequest ticketDetails, string backgroundImagePath)
+        public async Task CreatePdfAsync(string outputPath, TicketsDataDbM ticketData, TicketHandling ticketDetails, string backgroundImagePath)
         {
             // Initialize PDF document
             using PdfDocument document = new PdfDocument();
@@ -81,7 +91,7 @@ namespace Services
                 PointF ticketOrigin = new PointF((page.GetClientSize().Width - (1024 * scaleFactor)) / 2, 0);
 
                 DrawBackgroundImage(page, backgroundImagePath, ticketOrigin, scaleFactor);
-                DrawTextContent(page.Graphics, ticketOrigin, scaleFactor, regularFont, boldFont, ticketDetails);
+                DrawTextContent(page.Graphics, ticketOrigin, scaleFactor, regularFont, boldFont, ticketData, ticketDetails);
                 DrawBarcode(page, ticketOrigin, scaleFactor, ticketDetails);
 
                 foreach (var element in ticketDetails.Elements)
@@ -127,22 +137,22 @@ namespace Services
             page.Graphics.DrawImage(background, origin.X, origin.Y, 1024 * scale, 364 * scale);
         }
 
-        private void DrawTextContent(PdfGraphics graphics, PointF origin, float scale, PdfFont regularFont, PdfFont boldFont, TicketRequest ticketRequests)
+        private void DrawTextContent(PdfGraphics graphics, PointF origin, float scale, PdfFont regularFont, PdfFont boldFont, TicketsDataDbM ticketData, TicketHandling ticketDetails)
         {
             // Use 'graphics' to draw strings on the PDF, adjusting positions based on 'origin' and 'scale'
-            graphics.DrawString(ticketRequests.Email, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 80 * scale));
-            graphics.DrawString(ticketRequests.Name, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 105 * scale));
-            graphics.DrawString($"Webbokningsnr: {ticketRequests.WebBookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 130 * scale));
-            graphics.DrawString($"Bokningsnr: {ticketRequests.BookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 155 * scale));
-            graphics.DrawString(ticketRequests.TicketType, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 180 * scale));
-            graphics.DrawString(ticketRequests.Price.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 205 * scale));
-            graphics.DrawString($"Köpdatum: {ticketRequests.PurchaseDate:yyyy-MM-dd}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 230 * scale));
+            graphics.DrawString(ticketData.Email, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 80 * scale));
+            graphics.DrawString(ticketData.SubEventName, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 105 * scale));
+            graphics.DrawString($"Webbokningsnr: {ticketData.WebBookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 130 * scale));
+            graphics.DrawString($"Bokningsnr: {ticketData.BookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 155 * scale));
+            //graphics.DrawString(ticketData.TicketType, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 180 * scale));
+            graphics.DrawString(ticketData.Price.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 205 * scale));
+            //graphics.DrawString($"Köpdatum: {ticketData.PurchaseDate:yyyy-MM-dd}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 230 * scale));
             graphics.DrawString("- Köpt biljett återlöses ej -", regularFont, PdfBrushes.Black, new PointF(origin.X + 140 * scale, origin.Y + 265 * scale));
             graphics.DrawString("Serviceavgift", regularFont, PdfBrushes.Black, new PointF(origin.X + 330 * scale, origin.Y + 180 * scale));
-            graphics.DrawString(ticketRequests.ServiceFee.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 400 * scale, origin.Y + 205 * scale));
-            graphics.DrawString(ticketRequests.EventName, boldFont, PdfBrushes.Black, new PointF(origin.X + 600 * scale, origin.Y + 40 * scale));
-            graphics.DrawString(ticketRequests.EventNameEnglish, regularFont, PdfBrushes.Black, new PointF(origin.X + 620 * scale, origin.Y + 70 * scale));
-            graphics.DrawString(ticketRequests.EventDate.ToString("yyyy-MM-dd HH:mm"), regularFont, PdfBrushes.Black, new PointF(origin.X + 640 * scale, origin.Y + 150 * scale));
+            graphics.DrawString(ticketData.ServiceFee.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 400 * scale, origin.Y + 205 * scale));
+            graphics.DrawString(ticketData.EventName, boldFont, PdfBrushes.Black, new PointF(origin.X + 600 * scale, origin.Y + 40 * scale));
+            graphics.DrawString(ticketData.SubEventName, regularFont, PdfBrushes.Black, new PointF(origin.X + 620 * scale, origin.Y + 70 * scale));
+            graphics.DrawString(ticketData.EventDate.ToString("yyyy-MM-dd HH:mm"), regularFont, PdfBrushes.Black, new PointF(origin.X + 640 * scale, origin.Y + 150 * scale));
 
 
             // Draw "Powered by Vitec Smart Visitor System AB" text at the bottom
@@ -176,7 +186,7 @@ namespace Services
             graphics.DrawImage(scissorsLineImage, scissorsPosition.X, scissorsPosition.Y, scissorsSize.Width, scissorsSize.Height);
         }
 
-        private void DrawBarcode(PdfPage page, PointF origin, float scale, TicketRequest ticketDetails)
+        private void DrawBarcode(PdfPage page, PointF origin, float scale, TicketHandling ticketDetails)
         {
             if (ticketDetails.UseQRCode)
             {

@@ -1,11 +1,12 @@
-﻿using Models;
+﻿using DbModels;
+using Models;
 
 namespace Services
 {
     public interface IPdfCreationService
     {
         string GetTemporaryPdfFilePath();
-        Task<byte[]> CreateAndSavePdfAsync(TicketRequest ticketDetails, string backgroundImagePath);
+        Task<byte[]> CreateAndSavePdfAsync(TicketsDataDbM ticketData, TicketHandling ticketDetails, string backgroundImagePath);
 
     }
 }
