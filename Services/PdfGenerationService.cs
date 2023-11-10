@@ -140,19 +140,19 @@ namespace Services
         private void DrawTextContent(PdfGraphics graphics, PointF origin, float scale, PdfFont regularFont, PdfFont boldFont, TicketsDataDbM ticketData, TicketHandling ticketDetails)
         {
             // Use 'graphics' to draw strings on the PDF, adjusting positions based on 'origin' and 'scale'
-            graphics.DrawString(ticketData.Email, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 80 * scale));
-            graphics.DrawString(ticketData.SubEventName, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 105 * scale));
-            graphics.DrawString($"Webbokningsnr: {ticketData.WebBookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 130 * scale));
-            graphics.DrawString($"Bokningsnr: {ticketData.BookingNumber}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 155 * scale));
+            graphics.DrawString(ticketData.eMail, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 80 * scale));
+            graphics.DrawString(ticketData.KontaktPerson, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 105 * scale));
+            graphics.DrawString($"Webbokningsnr: {ticketData.webbkod}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 130 * scale));
+            graphics.DrawString($"Bokningsnr: {ticketData.BokningsNr}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 155 * scale));
             //graphics.DrawString(ticketData.TicketType, regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 180 * scale));
-            graphics.DrawString(ticketData.Price.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 205 * scale));
+            graphics.DrawString(ticketData.Pris.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 205 * scale));
             //graphics.DrawString($"Köpdatum: {ticketData.PurchaseDate:yyyy-MM-dd}", regularFont, PdfBrushes.Black, new PointF(origin.X + 30 * scale, origin.Y + 230 * scale));
             graphics.DrawString("- Köpt biljett återlöses ej -", regularFont, PdfBrushes.Black, new PointF(origin.X + 140 * scale, origin.Y + 265 * scale));
             graphics.DrawString("Serviceavgift", regularFont, PdfBrushes.Black, new PointF(origin.X + 330 * scale, origin.Y + 180 * scale));
-            graphics.DrawString(ticketData.ServiceFee.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 400 * scale, origin.Y + 205 * scale));
-            graphics.DrawString(ticketData.EventName, boldFont, PdfBrushes.Black, new PointF(origin.X + 600 * scale, origin.Y + 40 * scale));
-            graphics.DrawString(ticketData.SubEventName, regularFont, PdfBrushes.Black, new PointF(origin.X + 620 * scale, origin.Y + 70 * scale));
-            graphics.DrawString(ticketData.EventDate.ToString("yyyy-MM-dd HH:mm"), regularFont, PdfBrushes.Black, new PointF(origin.X + 640 * scale, origin.Y + 150 * scale));
+            graphics.DrawString(ticketData.serviceavgift1_kr.ToString("F2"), regularFont, PdfBrushes.Black, new PointF(origin.X + 400 * scale, origin.Y + 205 * scale));
+            graphics.DrawString(ticketData.namn1, boldFont, PdfBrushes.Black, new PointF(origin.X + 600 * scale, origin.Y + 40 * scale));
+            graphics.DrawString(ticketData.namn, regularFont, PdfBrushes.Black, new PointF(origin.X + 620 * scale, origin.Y + 70 * scale));
+            graphics.DrawString(ticketData.datumStart.ToString("yyyy-MM-dd HH:mm"), regularFont, PdfBrushes.Black, new PointF(origin.X + 640 * scale, origin.Y + 150 * scale));
 
 
             // Draw "Powered by Vitec Smart Visitor System AB" text at the bottom

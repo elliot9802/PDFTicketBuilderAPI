@@ -1,38 +1,26 @@
-﻿using Newtonsoft.Json;
-
-namespace DbModels
+﻿namespace DbModels
 {
     public class TicketsDataDbM
     {
-        [JsonProperty("platsbokad_id")]
-        public string? PlatsbokadId { get; set; }
+        public string? platsbokad_id { get; set; }
 
-        [JsonProperty("ArtikelNr")]
-        public string? ArtNr { get; set; }
+        public string? ArtikelNr { get; set; }
 
-        [JsonProperty("Pris")]
-        public decimal Price { get; set; }
+        public decimal Pris { get; set; }
 
-        [JsonProperty("serviceavgift1_kr")]
-        public decimal ServiceFee { get; set; }
+        public decimal serviceavgift1_kr { get; set; }
 
-        [JsonProperty("Artikelnamn")]
-        public string? ArtName { get; set; }
+        public string? Artikelnamn { get; set; }
 
-        [JsonProperty("stolsrad")]
-        public string? ChairRow { get; set; }
+        public string? stolsrad { get; set; }
 
-        [JsonProperty("stolsnr")]
-        public string? ChairNr { get; set; }
+        public string? stolsnr { get; set; }
 
-        [JsonProperty("eventdatum_id")]
-        public string? EventDateId { get; set; }
+        public string? eventdatum_id { get; set; }
 
-        [JsonProperty("datumStart")]
-        public DateTime EventDate { get; set; }
+        public DateTime datumStart { get; set; }
 
-        [JsonProperty("namn1")]
-        public string? EventName { get; set; }
+        public string? namn1 { get; set; }
 
         //#region osäker på implementering
 
@@ -76,28 +64,20 @@ namespace DbModels
         //public string? Webbcode { get; set; }
         //#endregion
 
-        [JsonProperty("namn")]
-        public string? SubEventName { get; set; }
+        public string? namn { get; set; }
 
-        [JsonProperty("BokningsNr")]
-        public string? BookingNumber { get; set; }
+        public string? BokningsNr { get; set; }
 
-        [JsonProperty("webbkod")]
-        public string? WebBookingNumber { get; set; }
+        public string? webbkod { get; set; }
 
-        [JsonProperty("anamn")]
-        public string? FacilityName { get; set; }
+        public string? anamn { get; set; }
 
-        [JsonProperty("reklam1")]
-        public string? Ad { get; set; }
+        public string? reklam1 { get; set; }
 
-        [JsonProperty("showEventInfo")]
         public int? showEventInfo { get; set; }
 
-        [JsonProperty("KontaktPerson")]
-        public string? ContactPerson { get; set; }
+        public string? KontaktPerson { get; set; }
 
-        [JsonProperty("eMail")]
-        public string? Email { get; set; }
+        public string? eMail { get; set; }
     }
 }
